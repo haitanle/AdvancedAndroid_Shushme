@@ -16,13 +16,27 @@ package com.example.android.shushme;
 * limitations under the License.
 */
 
+import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Places;
+
+public class MainActivity extends AppCompatActivity implements
+    GoogleApiClient.ConnectionCallbacks,
+    GoogleApiClient.OnConnectionFailedListener,
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     // Constants
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -47,10 +61,48 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new PlaceListAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
-        // TODO (4) Create a GoogleApiClient with the LocationServices API and GEO_DATA_API
+        // done (4) Create a GoogleApiClient with the LocationServices API and GEO_DATA_API
+        GoogleApiClient client = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .addApi(Places.GEO_DATA_API)
+                .enableAutoManage(this,this)
+                .build();
     }
 
-    // TODO (5) Override onConnected, onConnectionSuspended and onConnectionFailed for GoogleApiClient
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.i(TAG, "API Client Connection Successful");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "API Client Connection Suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i(TAG, "API Client Connection Failed");
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+
+    }
+
+// TODO (5) Override onConnected, onConnectionSuspended and onConnectionFailed for GoogleApiClient
     // TODO (7) Override onResume and inside it initialize the location permissions checkbox
     // TODO (8) Implement onLocationPermissionClicked to handle the CheckBox click event
     // TODO (9) Implement the Add Place Button click event to show  a toast message with the permission status
