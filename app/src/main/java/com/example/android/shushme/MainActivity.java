@@ -16,10 +16,12 @@ package com.example.android.shushme;
 * limitations under the License.
 */
 
+import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -39,10 +41,16 @@ import com.example.android.shushme.provider.PlaceContract;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.rtchagas.pingplacepicker.PingPlacePicker;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
     GoogleApiClient.ConnectionCallbacks,
@@ -57,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements
     // Member variables
     private PlaceListAdapter mAdapter;
     private RecyclerView mRecyclerView;
+    private GoogleApiClient  mClient;
 
     /**
      * Called when the activity is starting
@@ -75,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(mAdapter);
 
         // done (4) Create a GoogleApiClient with the LocationServices API and GEO_DATA_API
-        GoogleApiClient client = new GoogleApiClient.Builder(this)
+        mClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
@@ -97,6 +106,31 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.i(TAG, "API Client Connection Failed");
+    }
+
+    /**
+     * get all places stored locally and retrieve the place using it's id
+     * then set to Array holder<BufferPlace>
+     */
+    public void refreshPlacesData(){
+        Uri uri = PlaceContract.PlaceEntry.CONTENT_URI;
+        Cursor data = getContentResolver().query(
+                uri, null, null, null, null);
+
+        if (data == null || data.getCount() == 0) return;
+        List<String> guids = new ArrayList<String>();
+        while (data.moveToNext()){
+            guids.add(data.getString(data.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACE_ID)));
+        }
+        PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mClient,
+                guids.toArray(new String[guids.size()]));
+
+        placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+            @Override
+            public void onResult(@NonNull PlaceBuffer places) {
+                mAdapter.swapPlaces(places);
+            }
+        });
     }
 
     @NonNull
@@ -171,18 +205,21 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Initailize permission checkbox onResume
+     */
     @Override
     public void onResume() {
         super.onResume();
 
-        // Initialize location permissions checkbox
-        CheckBox locationPermissions = (CheckBox) findViewById(R.id.location_permission_checkbox);
+        //Initialize location permission checkbox
+        CheckBox locationPermission = (CheckBox) findViewById(R.id.location_permission_checkbox);
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            locationPermissions.setChecked(false);
-        } else {
-            locationPermissions.setChecked(true);
-            locationPermissions.setEnabled(false);
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            locationPermission.setChecked(false);
+        }else{
+            locationPermission.setChecked(true);
+            locationPermission.setEnabled(true);
         }
     }
 

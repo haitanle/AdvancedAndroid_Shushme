@@ -24,9 +24,12 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.location.places.PlaceBuffer;
+
 public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.PlaceViewHolder> {
 
     private Context mContext;
+    private PlaceBuffer mPlaces;
 
     /**
      * Constructor using the context and the db cursor
@@ -61,6 +64,14 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
     @Override
     public void onBindViewHolder(PlaceViewHolder holder, int position) {
 
+    }
+
+    public void swapPlaces(PlaceBuffer newPlaces){
+        mPlaces = newPlaces;
+        if (mPlaces != null){
+            // Force the RecyclerView to refresh
+            this.notifyDataSetChanged();
+        }
     }
 
 
