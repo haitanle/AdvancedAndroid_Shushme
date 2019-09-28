@@ -1,3 +1,4 @@
+
 <resources>
     <string name="app_name">ShushMe</string>
     <string name="add_new_location">Add new location</string>
@@ -8,4 +9,9 @@
     <string name="settings_label">Settings</string>
     <string name="location_permissions">Location Permissions</string>
     <string name="enable_geofences">Enable Geofences</string>
+    <string name="privacy">http://www.google.com/policies/privacy</string>
+    <string name="ringer_permissions">Ringer Permissions</string>
+    <string name="silent_mode_activated">Silent mode activated</string>
+    <string name="touch_to_relaunch">Touch to launch the app.</string>
+    <string name="back_to_normal">Back to normal</string>
 </resources>

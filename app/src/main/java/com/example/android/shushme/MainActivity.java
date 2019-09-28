@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements
         // Set up the recycler view
         mRecyclerView = (RecyclerView) findViewById(R.id.places_list_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new PlaceListAdapter(this);
+        mAdapter = new PlaceListAdapter(this, null);
         mRecyclerView.setAdapter(mAdapter);
 
         // done (4) Create a GoogleApiClient with the LocationServices API and GEO_DATA_API
@@ -93,8 +93,13 @@ public class MainActivity extends AppCompatActivity implements
                 .build();
     }
 
+    /**
+     * Called when the Google API Client is successfully connected
+     * @param bundle Bundle of data provided to clients by Google Play services
+     */
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        refreshPlacesData();
         Log.i(TAG, "API Client Connection Successful");
     }
 
@@ -186,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode,resultCode,data);
-        if (requestCode == PLACE_PICKER_REQUEST && requestCode == RESULT_OK){
+        if (requestCode == PLACE_PICKER_REQUEST && resultCode == RESULT_OK){
             Place place = PingPlacePicker.getPlace(data);
             if (place == null){
                 Log.i(TAG, "No place selected");
@@ -202,6 +207,9 @@ public class MainActivity extends AppCompatActivity implements
             ContentValues contentValues = new ContentValues();
             contentValues.put(PlaceContract.PlaceEntry.COLUMN_PLACE_ID, placeId);
             getContentResolver().insert(PlaceContract.PlaceEntry.CONTENT_URI, contentValues);
+
+            //Get live data information - get new data from PingPlacePicker
+            refreshPlacesData();
         }
     }
 
